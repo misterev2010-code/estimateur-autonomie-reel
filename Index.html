@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f14" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <title>Estimateur d’autonomie réel</title>
+  <style>
+    :root { --bg:#0b0f14; --fg:#e9eef7; --muted:#8ea0b8; --green:#28d17c; --yellow:#f2c94c; --red:#ff5a5f; }
+    * { box-sizing:border-box; font-family: -apple-system, system-ui, Segoe UI, Roboto, Arial, sans-serif; }
+    body { margin:0; background:var(--bg); color:var(--fg); }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 22px 18px 30px; }
+    .card { border: 1px solid rgba(255,255,255,.08); border-radius: 18px; padding: 18px; background: rgba(255,255,255,.03); }
+    .title { font-size: 16px; color: var(--muted); letter-spacing:.08em; text-transform:uppercase; }
+    .rangeBox { margin-top: 12px; display:flex; flex-direction:column; gap:12px; }
+    .row { display:flex; justify-content:space-between; align-items:baseline; }
+    .label { font-size: 18px; color: var(--muted); }
+    .val { font-size: 28px; font-weight: 650; }
+    .val.big { font-size: 44px; }
+    .val.green { color: var(--green); }
+    .val.yellow { color: var(--yellow); }
+    .val.red { color: var(--red); }
+    .divider { height:1px; background: rgba(255,255,255,.08); margin: 10px 0; }
+    .controls { margin-top: 14px; display:grid; grid-template-columns: 1fr; gap: 12px; }
+    .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .ctrl { border: 1px solid rgba(255,255,255,.08); border-radius: 14px; padding: 12px; background: rgba(0,0,0,.12); }
+    .ctrl h3 { margin: 0 0 6px; font-size: 14px; color: var(--muted); font-weight: 600; }
+    input[type="range"] { width:100%; }
+    input[type="number"] { width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.10); background:#070a0e; color:var(--fg); font-size:16px;}
+    button { width:100%; padding:12px 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,.12); background:#0f1620; color:var(--fg); font-size:16px; font-weight:650; }
+    button:active { transform: scale(0.99); }
+    .hint { color: var(--muted); font-size: 13px; line-height: 1.35; }
+    .pill { display:inline-block; padding: 6px 10px; border-radius: 999px; border:1px solid rgba(255,255,255,.10); color: var(--muted); font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="title">Estimateur d’autonomie réel</div>
+
+      <!-- Affichage style Bolt: MAX haut / ACTUEL milieu / MIN bas -->
+      <div class="rangeBox" aria-label="Estimations autonomie">
+        <div class="row">
+          <div class="label">MAX</div>
+          <div id="maxKm" class="val green">— km</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="row">
+          <div class="label">ACTUEL</div>
+          <div id="normalKm" class="val big">— km</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="row">
+          <div class="label">MIN</div>
+          <div id="minKm" class="val red">— km</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="row">
+          <div class="label">Conso (Normal)</div>
+          <div id="kwh100" class="val yellow">— kWh/100</div>
+        </div>
+
+        <div class="row">
+          <div class="label">SoC</div>
+          <div id="soc" class="val">— %</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="grid2">
+          <div class="ctrl">
+            <h3>SoC (%)</h3>
+            <input id="socSlider" type="range" min="1" max="100" value="80" />
+            <div class="hint"><span class="pill">Simulation</span> Ajuste l’énergie restante.</div>
+          </div>
+          <div class="ctrl">
+            <h3>Capacité batterie utile (kWh)</h3>
+            <input id="capInput" type="number" min="10" max="200" value="85" />
+            <div class="hint">Ex: Blazer EV ~85 kWh utile (à ajuster selon ta réalité).</div>
+          </div>
+        </div>
+
+        <div class="ctrl">
+          <h3>Vitesse (km/h) → génère une conso réaliste</h3>
+          <input id="speedSlider" type="range" min="30" max="130" value="80" />
+          <div class="hint">Ville ≈ 16 kWh/100 — Autoroute ≈ 18.5 — 120 km/h ≈ 22 (simulation).</div>
+        </div>
+
+        <div class="grid2">
+          <button id="stepBtn">Simuler +1 km</button>
+          <button id="resetBtn">RESET</button>
+        </div>
+
+        <div class="hint">
+          Normal = moyenne des <b>5</b> derniers km. Min/Max = percentiles (80/20) des <b>50</b> derniers km.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
